@@ -15,7 +15,6 @@
     "tests"
   ],
   "dependencies":{
-    "layui":"2.4.3",
-    "jquery": "1.9.1"
+    "layui":"2.4.3"   
   }
 }
