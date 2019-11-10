@@ -100,6 +100,8 @@
 	<div style="display: none;" id="bookEditDiv">
 		<form class="layui-form" action="" lay-filter="bookEditLay" >
 			<!-- 提示：如果你不想用form，你可以换成div等任何一个普通元素 -->
+			<input type="hidden" name="id">
+			<input type="hidden"  name="photo" id="photoInput">
 			<div class="layui-form-item">
 				<label class="layui-form-label">书名</label>
 				<div class="layui-input-block">
@@ -142,12 +144,12 @@
 			<div class="layui-form-item">
 				<label class="layui-form-label">图片</label>
 				<div class="layui-input-block">
-					<input type="file" name="photox" placeholder="请输入" autocomplete="off" id="photoxInput"> <img alt="" id="previewImg">
+					<input type="file" name="photox" placeholder="请输入" autocomplete="off" id="photoxInput"> <img alt="" id="previewImg" >
 				</div>
 			</div>
 			<div class="layui-form-item">
 				<div class="layui-input-block">
-					<button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+					<button class="layui-btn" lay-submit lay-filter="bookBtn">立即提交</button>
 					<button type="reset" class="layui-btn layui-btn-primary">重置</button>
 				</div>
 			</div>
@@ -165,7 +167,7 @@
 	<script>
 		layui.use(['table','form'], function() {
 			var table = layui.table;
-
+            //////////
 			table.render({
 				elem : '#test',
 				url : 'book/list',
@@ -220,7 +222,7 @@
 					width : 100,
 					sort : true,
 					templet : function(res) {
-						return '<img src="' + res.photo + '">'
+						return '<img src="upload/' + res.photo + '">'
 					}
 				}, {
 					fixed : 'right',
@@ -241,6 +243,7 @@
 				limits : [ 1, 2, 4, 6, 8 ],//修改分页大小值
 				limit : 1
 			});
+			/////////////////////////////////////////////////////////
 			//头工具栏事件
 			table.on('toolbar(test)', function(obj) {
 				var checkStatus = table.checkStatus(obj.config.id);
@@ -318,6 +321,10 @@
 						area : [ '50%', '75%' ],
 						  success: function(layero, index){
 							    layui.form.val("bookEditLay",data);
+							    //如果有图片，显示出来
+							    if(data.photo){
+							    	layui.$("#previewImg").attr("src","upload/"+data.photo);
+								}
 							    //解决类型问题
 							    layui.$.post("type/findAll",function(data){
                                          for(var i=0;i<data.length;i++){
@@ -339,6 +346,31 @@
 
 					});
 				}
+            //监听书籍修改提交事件
+			layui.form.on('submit(bookBtn)', function(data){
+				  /*console.log(data.elem) //被执行事件的元素DOM对象，一般为button对象
+				  console.log(data.form) //被执行提交的form对象，一般在存在form标签时才会返回
+				  console.log(data.field) //当前容器的全部表单字段，名值对形式：{name: value}*/
+				  layui.$.post("book/update",data.field,function(res){
+
+		               layer.closeAll();
+						if (res.code == 0) {
+							//更新编辑的行，编辑后的数据data.field
+							obj.update(data.field);
+						} else {
+							layer.msg(res.msg, {
+								icon : 1,
+								time : 2000
+							//2秒关闭（如果不配置，默认是3秒）
+							}, function() {
+
+							});
+						}
+
+					});
+					return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+				});
+
 			});
 		});
 	</script>
@@ -368,7 +400,9 @@ layui.use('upload', function(){
 
      }
     ,done: function(res){
-      //上传完毕回调
+      //上传完成后新文件名赋值给photo输入
+        layui.$("#photoInput").val(res.newFileName);
+        
     }
     ,error: function(){
       //请求异常回调
