@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.apache.velocity.shaded.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ResourceUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,13 +38,24 @@ public class BookController {
 
 	@RequestMapping("/list")
 	//@ResponseBody // 返回数据给客户端
-	public IPage<Book> list(@RequestParam(defaultValue = "1", required = false) int page,
+	public IPage<Book> list(
+			@RequestParam(defaultValue = "", required = false) String name,
+			@RequestParam(defaultValue = "-1", required = false) int tid,
+			@RequestParam(defaultValue = "1", required = false) int page,
 			@RequestParam(defaultValue = "2", required = false) int limit) {
 
 		// 告诉要看那一页以及查询提交
 		IPage<Book> toWhichPage = new Page<Book>(page, limit);
 		QueryWrapper<Book> wrapper = new QueryWrapper<>();// 构建查询条
+		if (StringUtils.hasText(name)) {
+			wrapper.like("name", name);
+		}
+		if (tid!=-1) {
+			wrapper.eq("tid", tid);
+		}
 		IPage<Book> resultPage = iBookService.page(toWhichPage, wrapper);
+		
+		
 		return resultPage;
 	}
 
@@ -88,7 +100,7 @@ public class BookController {
 	//@ResponseBody
 	public Map<String, Object> update(Book book) {
 		Map<String, Object> result = new HashMap<>();
-		boolean ret=iBookService.updateById(book);
+		boolean ret=iBookService.saveOrUpdate(book);//根据id值进行判断
 		if (ret) {
 			result.put("code", 0);
 		} else {

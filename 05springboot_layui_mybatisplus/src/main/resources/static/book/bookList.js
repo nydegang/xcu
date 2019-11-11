@@ -1,89 +1,92 @@
-//导入日历模块，让表单支持日期选择
-layui.use('laydate', function() {
-	var laydate = layui.laydate;
-	// 执行一个laydate实例
-	laydate.render({
-		elem : '#pubdateInput' // 指定元素
-	});
+//JavaScript代码区域
+layui.use('element', function() {
+	var element = layui.element;
 });
-//
 layui.use([ 'table', 'form' ], function() {
-	// 页面加载后绘制搜索框
-	// 发送ajax去拿类型数据，同时给书籍编辑框也添加选项
-	layui.$.post("/type/findAll", function(data) {
-		layui.$.each(data, function(index, item) {
-			var option = new Option(item.name, item.id);
-			layui.$('#search_tidSel,#tidSel').append(option);// 往下拉菜单里添加元素
-			layui.form.render('select'); // 这个很重要
-		});
+	var table = layui.table;
+	// ///让搜索框的select 有选项
+	layui.$.post("type/findAll", function(data) {
+		for (var i = 0; i < data.length; i++) {
+			var op = new Option(data[i].name, data[i].id);
+			// 放置到select
+			layui.$("#tidSel2,#tidSel").append(op);
+		}
+		// 不调用看不到select
+		layui.form.render('select'); // 刷新select选择框渲染
 
 	});
-
-	var table = layui.table;
-
+	// 监听书籍修改提交事件
+	layui.form.on('submit(book-search)', function(data) {
+		// 把搜索条件带给服务器，用满足条件的数据更新表格
+		table.reload('test', {
+			url : 'book/list',
+			where : data.field
+		});
+		return false;
+	});
+	// ////////
 	table.render({
 		elem : '#test',
 		url : 'book/list',
-		toolbar : '#toolbarDemo', // 开启头部工具栏，并为其绑定左侧模板
+		toolbar : '#toolbarDemo' // 开启头部工具栏，并为其绑定左侧模板
+		,
 		defaultToolbar : [ 'filter', 'exports', 'print', { // 自定义头部工具栏右侧图标。如无需自定义，去除该参数即可
 			title : '提示',
 			layEvent : 'LAYTABLE_TIPS',
 			icon : 'layui-icon-tips'
 		} ],
 		title : '用户数据表',
-		cols : [ [
-				{
-					type : 'checkbox',
-					fixed : 'left'
-				},
-				{
-					field : 'id',
-					title : 'ID',
-					fixed : 'left',
-					unresize : true,
-					sort : true
-				},
-				{
-					field : 'name',
-					title : '书名',
-					edit : 'text'
-				},
-				{
-					field : 'author',
-					title : '作者',
-					edit : 'text',
-					sort : true
-				},
-				{
-					field : 'tid',
-					title : '类型'
-				},
-				{
-					field : 'price',
-					title : '价格'
-				},
-				{
-					field : 'descri',
-					title : '描述',
-					sort : true
-				},
-				{
-					field : 'pubdate',
-					title : '出版日期'
-				},
-				{
-					field : 'photo',
-					title : '图片',
-					sort : true,
-					templet : function(res) {
-						return '<img src="upload/' + res.photo
-								+ '" style="height:200px;" >'
-					}
-				}, {
-					fixed : 'right',
-					title : '操作',
-					toolbar : '#barDemo',
-				} ] ],
+		cols : [ [ {
+			type : 'checkbox',
+			fixed : 'left'
+		}, {
+			field : 'id',
+			title : 'ID',
+			width : 80,
+			fixed : 'left',
+			unresize : true,
+			sort : true
+		}, {
+			field : 'name',
+			title : '书名',
+			width : 120,
+			edit : 'text'
+		}, {
+			field : 'author',
+			title : '作者',
+			width : 80,
+			edit : 'text',
+			sort : true
+		}, {
+			field : 'tid',
+			title : '类型',
+			width : 100
+		}, {
+			field : 'price',
+			title : '价格'
+		}, {
+			field : 'descri',
+			title : '描述',
+			width : 80,
+			sort : true
+		}, {
+			field : 'pubdate',
+			title : '出版日期',
+			width : 120
+		}, {
+			field : 'photo',
+			title : '图片',
+			width : 100,
+			sort : true,
+			templet : function(res) {
+				return '<img src="upload/' + res.photo + '">'
+			}
+		}, {
+			fixed : 'right',
+			title : '操作',
+			toolbar : '#barDemo',
+			width : 150
+		} ] ],
 		page : true,
 		parseData : function(res) { // res 即为原始返回的数据
 			return {
@@ -94,10 +97,10 @@ layui.use([ 'table', 'form' ], function() {
 			// 解析数据列表
 			};
 		},
-		limits : [ 1, 2, 4, 6, 8 ],// 修改分页大小
+		limits : [ 1, 2, 4, 6, 8 ],// 修改分页大小值
 		limit : 1
 	});
-
+	// ///////////////////////////////////////////////////////
 	// 头工具栏事件
 	table.on('toolbar(test)', function(obj) {
 		var checkStatus = table.checkStatus(obj.config.id);
@@ -113,142 +116,144 @@ layui.use([ 'table', 'form' ], function() {
 		case 'isAll':
 			layer.msg(checkStatus.isAll ? '全选' : '未全选');
 			break;
-		case 'addBook':
-			layer.open({
-				type : 1,
-				title : '书籍信息添加',
-				area : [ '50%', '75%' ],
-				content : layui.jquery('#editTpl'),// 把编辑框作为对话框的内容
-				success : function(layero, index) {// 弹出成功时候回调的函数
-					// 清空表单
-					layui.form.val("editForm", {
-						author : "",
-						descri : "",
-						id : "",
-						name : "",
-						photo : "",
-						price : "",
-						pubdate : "",
-						tid : -1,
-					});
-					
-				}
-			}, function(value, index) {
-				obj.update({
-				// email : value
-				});
-				layer.close(index);
+		case 'bookAdd':
+			/*
+			 * 弹出一个新增表单
+			 */
+			openBookForm({
+				author : "",
+				descri : "",
+				id : "",
+				name : "",
+				photo : "",
+				price : "",
+				pubdate : "",
+				tid : -1
 			});
 			break;
-
 		// 自定义头工具栏右侧图标 - 提示
 		case 'LAYTABLE_TIPS':
 			layer.alert('这是工具栏右侧自定义的一个图标按钮');
 			break;
 		}
+		;
 	});
-
 	// 监听行工具事件
 	table.on('tool(test)', function(obj) {
 		var data = obj.data;
 		if (obj.event === 'del') {
-			layer.confirm('真的删除行么', function(index) {
-				// 向服务端发送删除指令，在这里可以使用Ajax异步
-				// layui.jquery找到jQuery
-				layui.jquery.post("book/delete", {// 这里传参数
-					id : data.id
-				}, function(ret) {// 成功回调函数
-					if (ret.code == "1") {// 删除成功，刷新当前页表格
-						layer.msg(ret.msg, {
-							icon : 1,
-							time : 1500
-						}, function() {
-							obj.del(); // 删除对应行（tr）的DOM结构，并更新缓存
-							layer.close(index);
-							table.reload('test');// 重新加载表单
+			layer.confirm('真的删除行么', function(index) {// yes
+				/**
+				 * 
+				 * 向服务器发送请求执行删除，服务器消息后对页面处理：1 成功，
+				 */
+				layui.$.post("book/del", {
+					id : data.id,
+					page : 1
+				}, function(data) {
+
+					// 关闭层
+					layer.close(index);
+					if (data.code == 1) {// 成功
+						// 重新加载表格
+						table.reload("test", {
+							url : "book/list"
 						});
-					} else if (ret.code == "-1") { // 删除失败
-						layer.alert(ret.msg, {
-							icon : 2
+					} else {// 失败
+						layer.msg(data.msg, {
+							icon : 1,
+							time : 2000
+						// 2秒关闭（如果不配置，默认是3秒）
 						}, function() {
-							layer.close(index);
+
 						});
 					}
 				});
 			});
 		} else if (obj.event === 'edit') {
-			layer.open({
-				type : 1,
-				title : '书籍信息修改',
-				area : [ '50%', '75%' ],
-				content : layui.jquery('#editTpl'),// 把编辑框作为对话框的内容
-				success : function(layero, index) {// 弹出成功时候回调的函数
-					// obj.data是该行数据的值，这里layui.form.val把它回填到表单
-					layui.form.val("editForm", obj.data);
-					// 发送ajax去拿类型数据,这里只要选中即可
-					layui.$('#tidSel').val(obj.data.tid?obj.data.tid:'-1')
-				}
-			}, function(value, index) {
-				obj.update({
-				// email : value
-				});
-				layer.close(index);
-			});
+			openBookForm(data, data.tid);
 		}
+
 	});
-	// 监听提交
-	layui.form.on('submit(bookSubmit)', function(data) {
-		formSubmit(data);
-		return false;// 返回false采用Ajax提交
-	});
-	layui.form.on('submit(book-front-search)', function(data) {
-		table.reload('test', {
-			url : '/book/list',
-			where : data.field,//添加搜索条件
-			page:1//修正为看第一页
-		});
-		return false;// 返回false采用Ajax提交
-	});
-	// 提交表单
-	function formSubmit(obj) {
-		layui.$.ajax({
-			type : "POST",
-			data : layui.$("#editTpl>form").serialize(),
-			url : "/book/update",
-			success : function(data) {
-				if (data.code == 1) {
-					layer.alert(data.msg, function() {
-						layer.closeAll();
-						table.reload('test');
-					});
-				} else {
-					layer.alert(data.msg);
-				}
-			},
-			error : function() {
-				layer.alert("操作请求错误，请您稍后再试", function() {
-					layer.closeAll();
+	// 监听书籍修改提交事件
+	layui.form.on('submit(bookBtn)', function(data) {
+		layui.$.post("book/update", data.field, function(res) {
+
+			layer.closeAll();
+			if (res.code == 0) {
+				// 插入一行不合理，每页大小不正确；靠谱的方式重载表格
+				// 重新加载表格
+				table.reload("test", {
+					url : "book/list"
+				});
+			} else {
+				layer.msg(res.msg, {
+					icon : 1,
+					time : 2000
+				// 2秒关闭（如果不配置，默认是3秒）
+				}, function() {
+
 				});
 			}
+
 		});
+		return false; // 阻止表单跳转。如果需要表单跳转，去掉这段即可。
+	});
+	// /定义表单打开方法
+	function openBookForm(bookData, tid) {
+		layer.open({
+			type : 1,
+			title : "书籍维护",
+			content : layui.$("#bookEditDiv"),
+			area : [ '50%', '75%' ],
+			success : function(layero, index) {
+				layui.form.val("bookEditLay", bookData);
+				// 如果有图片，显示出来
+				if (bookData.photo) {
+					layui.$("#previewImg").attr("src",
+							"upload/" + bookData.photo);
+				} else {
+					layui.$("#previewImg").attr("src", "");
+
+				}
+			}
+
+		});
+
 	}
+
+});
+
+layui.use('laydate', function() {
+	var laydate = layui.laydate;
+
+	// 执行一个laydate实例
+	laydate.render({
+		elem : '#pubdateInput' // 指定元素
+	});
 });
 // 文件上传
-layui.use([ 'upload' ], function() {
+layui.use('upload', function() {
 	var upload = layui.upload;
+
 	// 执行实例
 	var uploadInst = upload.render({
 		elem : '#photoxInput', // 绑定元素
-		url : '/book/upload/', // 上传接口
-		before : function(obj) {
-			// 预读本地文件示例，不支持ie8
+		
+		url : 'book/upload' ,// 上传接口
+		
+		field : "photox",
+
+		choose : function(obj) {
 			obj.preview(function(index, file, result) {
-				layui.$('#previewImg').attr('src', result); // 图片链接（base64）
+				layui.$("#previewImg").attr("src", result);
 			});
+
 		},
 		done : function(res) {
-			// 上传完毕回调
+			// 上传完成后新文件名赋值给photo输入
 			layui.$("#photoInput").val(res.newFileName);
+
 		},
 		error : function() {
 			// 请求异常回调

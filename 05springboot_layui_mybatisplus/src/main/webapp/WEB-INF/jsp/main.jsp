@@ -83,6 +83,34 @@
 		<div class="layui-body">
 			<!-- 内容主体区域 -->
 			<div style="padding: 15px;">
+				<!-- 搜索框 -->
+				<div class=" layui-card-header layuiadmin-card-header-auto" lay-filter="app-content-comment">
+					<form class="layui-form" action="" lay-filter="bookSearchLay">
+						<div class="layui-form-item">
+							<div class="layui-inline">
+								<label class="layui-form-label">书名</label>
+								<div class="layui-input-inline">
+									<input type="text" name="name" placeholder="请输入" autocomplete="off" class="layui-input">
+								</div>
+							</div>
+
+							<div class="layui-inline">
+								<label class="layui-form-label">类型</label>
+								<div class="layui-input-inline">
+									<select name="tid" lay-filter="tid" id="tidSel2">
+										<option value="-1">--请选择--</option>
+									</select>
+								</div>
+							</div>
+							<div class="layui-inline">
+								<button class="layui-btn layuiadmin-btn-comm" data-type="reload" lay-submit="" lay-filter="book-search">
+									<i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+								</button>
+							</div>
+						</div>
+					</form>
+				</div>
+				<!-- ./搜索框 -->
 				<table class="layui-hide" id="test" lay-filter="test"></table>
 			</div>
 		</div>
@@ -91,6 +119,14 @@
 			© layui.com - 底部固定区域
 		</div>
 	</div>
+	<script type="text/html" id="toolbarDemo">
+  <div class="layui-btn-container">
+    <button class="layui-btn layui-btn-sm" lay-event="getCheckData">获取选中行数据</button>
+    <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>
+    <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>
+    <button class="layui-btn layui-btn-sm" lay-event="bookAdd">新增</button>
+  </div>
+</script>
 	<!-- 按钮部分 -->
 	<script type="text/html" id="barDemo">
   <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
@@ -98,10 +134,9 @@
 </script>
 	<!-- 这里放置书籍修改表单，用户不点击不应该显示 -->
 	<div style="display: none;" id="bookEditDiv">
-		<form class="layui-form" action="" lay-filter="bookEditLay" >
+		<form class="layui-form" action="" lay-filter="bookEditLay">
 			<!-- 提示：如果你不想用form，你可以换成div等任何一个普通元素 -->
-			<input type="hidden" name="id">
-			<input type="hidden"  name="photo" id="photoInput">
+			<input type="hidden" name="id"> <input type="hidden" name="photo" id="photoInput">
 			<div class="layui-form-item">
 				<label class="layui-form-label">书名</label>
 				<div class="layui-input-block">
@@ -144,7 +179,10 @@
 			<div class="layui-form-item">
 				<label class="layui-form-label">图片</label>
 				<div class="layui-input-block">
-					<input type="file" name="photox" placeholder="请输入" autocomplete="off" id="photoxInput"> <img alt="" id="previewImg" >
+					<button type="button" class="layui-btn" id="photoxInput">
+						<i class="layui-icon">&#xe67c;</i>上传图片
+					</button>
+					<img alt="" id="previewImg">
 				</div>
 			</div>
 			<div class="layui-form-item">
@@ -158,257 +196,7 @@
 	</div>
 	<!-- .///书籍表单 -->
 	<script src="bower_components/layui/dist/layui.js"></script>
-	<script>
-		//JavaScript代码区域
-		layui.use('element', function() {
-			var element = layui.element;
-		});
-	</script>
-	<script>
-		layui.use(['table','form'], function() {
-			var table = layui.table;
-            //////////
-			table.render({
-				elem : '#test',
-				url : 'book/list',
-				toolbar : '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
-				,
-				defaultToolbar : [ 'filter', 'exports', 'print', { //自定义头部工具栏右侧图标。如无需自定义，去除该参数即可
-					title : '提示',
-					layEvent : 'LAYTABLE_TIPS',
-					icon : 'layui-icon-tips'
-				} ],
-				title : '用户数据表',
-				cols : [ [ {
-					type : 'checkbox',
-					fixed : 'left'
-				}, {
-					field : 'id',
-					title : 'ID',
-					width : 80,
-					fixed : 'left',
-					unresize : true,
-					sort : true
-				}, {
-					field : 'name',
-					title : '书名',
-					width : 120,
-					edit : 'text'
-				}, {
-					field : 'author',
-					title : '作者',
-					width : 80,
-					edit : 'text',
-					sort : true
-				}, {
-					field : 'tid',
-					title : '类型',
-					width : 100
-				}, {
-					field : 'price',
-					title : '价格'
-				}, {
-					field : 'descri',
-					title : '描述',
-					width : 80,
-					sort : true
-				}, {
-					field : 'pubdate',
-					title : '出版日期',
-					width : 120
-				}, {
-					field : 'photo',
-					title : '图片',
-					width : 100,
-					sort : true,
-					templet : function(res) {
-						return '<img src="upload/' + res.photo + '">'
-					}
-				}, {
-					fixed : 'right',
-					title : '操作',
-					toolbar : '#barDemo',
-					width : 150
-				} ] ],
-				page : true,
-				parseData : function(res) { //res 即为原始返回的数据
-					return {
-						"code" : 0, //解析接口状态
-						//"msg": res.message, //解析提示文本
-						"count" : res.total, //解析数据长度
-						"data" : res.records
-					//解析数据列表
-					};
-				},
-				limits : [ 1, 2, 4, 6, 8 ],//修改分页大小值
-				limit : 1
-			});
-			/////////////////////////////////////////////////////////
-			//头工具栏事件
-			table.on('toolbar(test)', function(obj) {
-				var checkStatus = table.checkStatus(obj.config.id);
-				switch (obj.event) {
-				case 'getCheckData':
-					var data = checkStatus.data;
-					layer.alert(JSON.stringify(data));
-					break;
-				case 'getCheckLength':
-					var data = checkStatus.data;
-					layer.msg('选中了：' + data.length + ' 个');
-					break;
-				case 'isAll':
-					layer.msg(checkStatus.isAll ? '全选' : '未全选');
-					break;
+	<script src="book/bookList.min.js"></script>
 
-				//自定义头工具栏右侧图标 - 提示
-				case 'LAYTABLE_TIPS':
-					layer.alert('这是工具栏右侧自定义的一个图标按钮');
-					break;
-				}
-				;
-			});
-			//监听行工具事件
-			table.on('tool(test)', function(obj) {
-				var data = obj.data;
-				//console.log(obj)
-				if (obj.event === 'del') {
-					layer.confirm('真的删除行么', function(index) {//yes
-						/* obj.del();
-						 layer.close(index);*/
-						/**
-						
-						   向服务器发送请求执行删除，服务器消息后对页面处理：1 成功，
-						 */
-						layui.$.post("book/del", {
-							id : data.id,
-							page : 1
-						}, function(data) {
-
-							if (data.code == 1) {//成功
-								//关闭层
-								layer.close(index);
-								//重新加载表格
-								table.reload("test", {
-									url : "book/list"
-								});
-							} else {//失败
-								//关闭层
-								layer.close(index);
-								layer.msg(data.msg, {
-									icon : 1,
-									time : 2000
-								//2秒关闭（如果不配置，默认是3秒）
-								}, function() {
-
-								});
-							}
-						});
-					});
-				} else if (obj.event === 'edit') {
-					/*layer.prompt({
-					  formType: 2
-					  ,value: data.email
-					}, function(value, index){
-					  obj.update({
-					    email: value
-					  });
-					  layer.close(index);
-					});*/
-					layer.open({
-						type : 1,
-						title : "书籍修改",
-						content : layui.$("#bookEditDiv"),
-						area : [ '50%', '75%' ],
-						  success: function(layero, index){
-							    layui.form.val("bookEditLay",data);
-							    //如果有图片，显示出来
-							    if(data.photo){
-							    	layui.$("#previewImg").attr("src","upload/"+data.photo);
-								}
-							    //解决类型问题
-							    layui.$.post("type/findAll",function(data){
-                                         for(var i=0;i<data.length;i++){
-                                          var op=new Option(data[i].name,data[i].id);
-                                          if(data[i].id==obj.data.tid){
-                                                    op.selected=true;
-                                              }
-                                          //放置到select
-                                          
-                                           layui.$("#tidSel").append(op);
-                                         }
-                                         //不调用看不到select
-                                         layui.form.render('select'); //刷新select选择框渲染
-								    
-								    });
-								    
-							    
-						 }
-
-					});
-				}
-            //监听书籍修改提交事件
-			layui.form.on('submit(bookBtn)', function(data){
-				  /*console.log(data.elem) //被执行事件的元素DOM对象，一般为button对象
-				  console.log(data.form) //被执行提交的form对象，一般在存在form标签时才会返回
-				  console.log(data.field) //当前容器的全部表单字段，名值对形式：{name: value}*/
-				  layui.$.post("book/update",data.field,function(res){
-
-		               layer.closeAll();
-						if (res.code == 0) {
-							//更新编辑的行，编辑后的数据data.field
-							obj.update(data.field);
-						} else {
-							layer.msg(res.msg, {
-								icon : 1,
-								time : 2000
-							//2秒关闭（如果不配置，默认是3秒）
-							}, function() {
-
-							});
-						}
-
-					});
-					return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
-				});
-
-			});
-		});
-	</script>
-	<script>
-layui.use('laydate', function(){
-  var laydate = layui.laydate;
-  
-  //执行一个laydate实例
-  laydate.render({
-    elem: '#pubdateInput' //指定元素
-  });
-});
-</script>
-<script>
-//文件上传
-layui.use('upload', function(){
-  var upload = layui.upload;
-   
-  //执行实例
-  var uploadInst = upload.render({
-    elem: '#photoxInput' //绑定元素
-    ,url: 'book/upload' //上传接口
-    ,choose: function(obj){
-    	obj.preview(function(index, file, result){
-            layui.$("#previewImg").attr("src",result);
-        });
-
-     }
-    ,done: function(res){
-      //上传完成后新文件名赋值给photo输入
-        layui.$("#photoInput").val(res.newFileName);
-        
-    }
-    ,error: function(){
-      //请求异常回调
-    }
-  });
-});
-</script>
 </body>
 </html>
