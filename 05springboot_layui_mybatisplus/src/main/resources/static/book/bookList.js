@@ -15,7 +15,7 @@ layui.use([ 'table', 'form' ], function() {
 		layui.form.render('select'); // 刷新select选择框渲染
 
 	});
-	// 监听书籍修改提交事件
+	// 监听书籍搜索提交事件
 	layui.form.on('submit(book-search)', function(data) {
 		// 把搜索条件带给服务器，用满足条件的数据更新表格
 		table.reload('test', {
@@ -136,7 +136,6 @@ layui.use([ 'table', 'form' ], function() {
 			layer.alert('这是工具栏右侧自定义的一个图标按钮');
 			break;
 		}
-		;
 	});
 	// 监听行工具事件
 	table.on('tool(test)', function(obj) {
@@ -178,7 +177,6 @@ layui.use([ 'table', 'form' ], function() {
 	// 监听书籍修改提交事件
 	layui.form.on('submit(bookBtn)', function(data) {
 		layui.$.post("book/update", data.field, function(res) {
-
 			layer.closeAll();
 			if (res.code == 0) {
 				// 插入一行不合理，每页大小不正确；靠谱的方式重载表格
@@ -195,7 +193,6 @@ layui.use([ 'table', 'form' ], function() {
 
 				});
 			}
-
 		});
 		return false; // 阻止表单跳转。如果需要表单跳转，去掉这段即可。
 	});
@@ -210,23 +207,17 @@ layui.use([ 'table', 'form' ], function() {
 				layui.form.val("bookEditLay", bookData);
 				// 如果有图片，显示出来
 				if (bookData.photo) {
-					layui.$("#previewImg").attr("src",
-							"upload/" + bookData.photo);
+					layui.$("#previewImg").attr("src", "upload/" + bookData.photo);
 				} else {
 					layui.$("#previewImg").attr("src", "");
-
 				}
 			}
-
 		});
-
 	}
-
 });
 
 layui.use('laydate', function() {
 	var laydate = layui.laydate;
-
 	// 执行一个laydate实例
 	laydate.render({
 		elem : '#pubdateInput' // 指定元素
@@ -235,25 +226,20 @@ layui.use('laydate', function() {
 // 文件上传
 layui.use('upload', function() {
 	var upload = layui.upload;
-
 	// 执行实例
 	var uploadInst = upload.render({
 		elem : '#photoxInput', // 绑定元素
-		
-		url : 'book/upload' ,// 上传接口
-		
+		url : 'book/upload',// 上传接口
 		field : "photox",
 
 		choose : function(obj) {
 			obj.preview(function(index, file, result) {
 				layui.$("#previewImg").attr("src", result);
 			});
-
 		},
 		done : function(res) {
 			// 上传完成后新文件名赋值给photo输入
 			layui.$("#photoInput").val(res.newFileName);
-
 		},
 		error : function() {
 			// 请求异常回调
