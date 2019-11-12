@@ -1,0 +1,20 @@
+{
+	"name": "static",
+	"authors": [
+		"nydegang <149098880@qq.com>"
+	],
+	"description": "",
+	"main": "",
+	"license": "MIT",
+	"homepage": "",
+	"ignore": [
+		"**/.*",
+		"node_modules",
+		"bower_components",
+		"test",
+		"tests"
+	],
+	"dependencies": {
+		"layui": "2.4.3"
+	}
+}
