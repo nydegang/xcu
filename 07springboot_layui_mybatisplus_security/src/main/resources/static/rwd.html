@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>响应式设计之流式布局原理</title>
+<!-- 1 告诉浏览表缩放 -->
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<style type="text/css">
+.container {
+	border: 2px solid red;
+}
+
+.product {
+	height: 200px;
+	border: 2px solid blue;
+	float: left;
+	box-sizing: border-box;
+}
+/*
+         1  1200px------一行四个
+         2 800px---1200px-----每行两个
+         3 小于800px----一行一个
+         
+      */
+@media screen and (max-width:799px) { /* <800*/
+	.product {
+		width: 100%;
+	}
+}
+
+@media screen and (min-width:800px) { /*800=< <1200*/
+	.product {
+		width: 50%;
+	}
+}
+
+@media screen and (min-width:1200px) { /*>=1200*/
+	.product {
+		width: 25%;
+	}
+}
+</style>
+</head>
+<body>
+ <div class="container">
+   <div class="product"></div>
+   <div class="product"></div>
+   <div class="product"></div>
+   <div class="product"></div>
+ </div>
+</body>
+</html>
